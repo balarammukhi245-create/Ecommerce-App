@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
+import RelatedProducts from "../components/RelatedProducts";
 
 const Product = () => {
 
@@ -81,6 +82,21 @@ const Product = () => {
         </div>
       </div>
 
+      {/*  Description & Reviews Sections  */}
+
+      <div className="my-20">
+        <div className="flex">
+          <b className="border px-5 py-3 text-sm">Description</b>
+          <p className="border px-5 py-3 text-sm">Reviews (125)</p>
+        </div>
+        <div className="flex flex-col gap-4 border px-6 by-6  text-sm text-gray-500">
+          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aperiam vero fuga ut unde dolore, quam quis. Error, rem facere exercitationem in cupiditate nihil ex quae facilis tempore saepe expedita iste.</p>
+          <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Suscipit, natus iusto. Itaque qui reprehenderit quo similique saepe pariatur laborum aperiam doloremque labore distinctio, minus nobis, ab, modi ullam impedit dolore.</p>
+        </div>
+      </div>
+
+      {/*  Display Related Products  */}
+      <RelatedProducts category={productData.category} subCategory={productData.subCategory} />
     </div>
   ) : <div className="opacity-0"> </div>
 };
