@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import userModel from "../models/userModels.js"
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError }from "../utils/apiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createToken = (id)=>{
     return jwt.sign({id},process.env.JWT_SECRET)
@@ -21,19 +22,26 @@ const loginUser = asyncHandler( async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (isMatch){
-        const token = createToken(user._id);
-        res.json({success:true, token})
-    }
-    else{
+    if (!isMatch){
         throw new ApiError(400, "Invalid Credentials")
     }
+    const token = createToken(user._id);
+
+    return res.status(200).json(
+        new ApiResponse(200, {token}, "Login Success")
+    )
 });
 
 
 //Route for userRegister
 const registerUser = asyncHandler(async (req, res) => {
     const {name, email, password} = req.body;
+
+    // Checking all fields are provided or not
+    if (!name || !email || !password){
+        throw new ApiError(400, "Please Enter all the fields")
+    }
+
 
     //checking user already exists or not
     const exists = await userModel.findOne({email});
@@ -45,6 +53,8 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!validator.isEmail(email)){
         throw new ApiError(400, "Please Enter a valid Email")
     }
+
+    //strong password check
     if (password.length < 8){
         throw new ApiError(400, "Please Enter a Strong Password")
     }
@@ -58,9 +68,14 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         password: hashedPassword
     })  
+
     const user = await newUser.save()
+
     const token = createToken(user._id)
-    res.json({success:true, token})
+
+    return res.status(201).json(
+        new ApiResponse(201, {token}, "User Registered Successfully")
+    )   
 })
 
 
