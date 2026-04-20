@@ -9,7 +9,7 @@ import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 
 
- //APP config `
+ //APP config 
  const app = express();
  const port = process.env.PORT || 4000;
  connectDB();

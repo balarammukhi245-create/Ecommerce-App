@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import Stripe from "stripe"
 
 // global variables
-const cureency = "inr";
+const currency = "AUD";
 const deliveryCharge = 10;
 
 // getway initialize
@@ -43,69 +43,78 @@ const placeOrder = asyncHandler( async (req, res) => {
     
 }
 );
+
+
 // Placing order using Stripe Payment Gateway
-const placeOrderStripe = asyncHandler( async (req, res) => {
+const placeOrderStripe = asyncHandler(async (req, res) => {
 
-    const { userId, items, amount, address} = req.body;
-    const { origin } = req.headers;
+  const { userId, items, amount, address } = req.body;
+  const origin = req.headers.origin || "http://localhost:5173";
 
-    if (!userId || !items || !amount || !address){
-        throw new ApiError(400, "All fields are required")
-     }
+  if (!userId || !items || !amount || !address) {
+    throw new ApiError(400, "All fields are required");
+  }
 
-   
-     
-     const orderData = {
-            userId,
-            items,
-            amount,
-            address,
-            paymentMethod: "Stripe",
-            payment: false,
-            date: Date.now()
-        }
-        
-        const newOrder = new orderModel(orderData)
-        await newOrder.save();
+  const orderData = {
+    userId,
+    items,
+    amount,
+    address,
+    paymentMethod: "Stripe",
+    payment: false,
+    date: Date.now()
+  };
 
-        const line_items = items.map((item) => ({
-            price_data: {
-                currency: cureency,
-                product_data: {
-                    name: item.name,
-                },
-                unit_amount: item.price*100
-            },
-            quantity: item.quantity
+  const newOrder = new orderModel(orderData);
+  await newOrder.save();
 
-        }))
 
-        line_items.push({
-             price_data: {
-                currency: cureency,
-                product_data: {
-                    name: deliveryCharge,
-                },
-                unit_amount: deliveryCharge*100
-            },
-            quantity: 1
-        })
+  const line_items = items.map((item) => ({
+    price_data: {
+      currency: currency,
+      product_data: {
+        name: item.name,
+      },
+      unit_amount: item.price * 100,
+    },
+    quantity: item.quantity,
+  }));
 
-        const session = await stripe.checkout.sessions.create({
-            success_url: `${origin}/veryfy?success=true&orderId=${newOrder._id}`,
-            cancel_url: `${origin}/veryfy?success=false&orderId=${newOrder._id}`,
-            line_items,
-            mode: "payment",
-            
-        })
 
-        return res.status(201).json(
-            new ApiResponse(201, {url: session.url}, "Order placed successfully")   
-        );
+  line_items.push({
+    price_data: {
+      currency: currency,
+      product_data: {
+        name: "Delivery Charges",
+      },
+      unit_amount: deliveryCharge * 100,
+    },
+    quantity: 1,
+  });
 
-})
 
-// Placing order using Razorpay Payment Gateway
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
+    cancel_url: `${origin}/verify?success=false&orderId=${newOrder._id}`,
+    line_items,
+    mode: "payment",
+  });
+
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { session_url: session.url },
+      "Order placed successfully"
+    )
+  );
+});
+
+
+
+
+
 const placeOrderRazorpay = async (req, res) => {
 
 }
