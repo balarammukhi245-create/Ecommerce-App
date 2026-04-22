@@ -47,7 +47,20 @@ const PlaceOrder = () => {
       order_id: order.id,
       receipt: order.receipt,
       handler: async (response) => {
-        console.log(response);
+        try {
+          const { data } = await axios.post(backendUrl + "/api/v1/order/verifyrazorpay", response,{headers: { token }});
+          console.log({data});
+          
+          if (data.success) {
+            toast.success(data.message);
+            navigate("/orders");
+            setCartItems({});
+          }
+        } catch (error) {
+          console.log(error.message);
+          
+          toast.error("Failed to verify payment.");
+        }
       }
         
   }

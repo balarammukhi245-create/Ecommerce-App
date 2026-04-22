@@ -20,7 +20,7 @@ const Order = ({ token }) => {
       );
 
       if (response.data.success) {
-        setOrders(response.data.data.orders);
+        setOrders(response.data.data.orders.reverse());
       } else {
         toast.error(response.data.message);
       }
