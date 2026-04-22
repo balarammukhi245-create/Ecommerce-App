@@ -147,7 +147,7 @@ const verifyStripe = asyncHandler(async (req, res) => {
 })
 
 
-
+// Placing order using Razorpay Payment Gateway
 const placeOrderRazorpay = asyncHandler( async (req, res) => {
 
    const { userId, items, amount, address } = req.body;
@@ -186,6 +186,33 @@ const placeOrderRazorpay = asyncHandler( async (req, res) => {
   });
 
 })
+
+
+//verify razorpay
+const verifyRazorpay = asyncHandler(async (req, res) => {
+
+  const { userId, razorpay_order_id } = req.body;
+
+
+  if (!userId || !razorpay_order_id) {
+    throw new ApiError(400, "User ID and Razorpay Order ID are required");
+  }
+
+  const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+  console.log(orderInfo);
+
+  if (orderInfo.status !== "paid") {
+    throw new ApiError(400, "Payment Failed");
+  }
+
+  await orderModel.findByIdAndUpdate(orderInfo.receipt, {payment: true});
+  await userModel.findByIdAndUpdate(userId, {cartData: {}});
+
+  return res.status(200).json(
+    new ApiResponse(200, "Payment Successful")
+  );
+
+});
 
 
 // All Order data for Admin panel
@@ -239,4 +266,4 @@ const updateStatus = asyncHandler( async (req, res) => {
 
 })
 
-export { placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus, verifyStripe }    
+export { placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus, verifyStripe,verifyRazorpay }    
