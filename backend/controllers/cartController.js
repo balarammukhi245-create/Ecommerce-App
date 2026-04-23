@@ -62,6 +62,7 @@ const updateCart = asyncHandler( async (req, res) => {
         );
 
 } )
+
 // get user cart data
 const getUserCart = asyncHandler(async (req, res) => {
     
